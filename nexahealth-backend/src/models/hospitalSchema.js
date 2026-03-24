@@ -7,7 +7,11 @@ const hospitalSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
-
+    hospitalPhoneno: {          // <-- ADD THIS
+      type: String,
+      required: true,
+      trim: true,
+    },
     hospitalName: {
       type: String,
       required: true,

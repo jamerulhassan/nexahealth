@@ -4,73 +4,108 @@ import Loading from "../components/loading/Loading";
 
 const deepCopy = (data) => JSON.parse(JSON.stringify(data));
 
+const EMPTY_BLOOD = {
+  A_Positive: 0,
+  B_Positive: 0,
+  O_Positive: 0,
+  AB_Positive: 0,
+  A_Negative: 0,
+  B_Negative: 0,
+  O_Negative: 0,
+  AB_Negative: 0,
+};
+
 const HospitalDashboard = () => {
   const [errMsg, setErrmsg] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [userLocation, setUserLocation] = useState(null);
 
-  // ✅ safe localStorage read
+  // 🔐 safe localStorage read
   const storedHospital = JSON.parse(
     localStorage.getItem("registerHospitalDetails") || "null"
   );
 
-  const [registeredHospital, setRegisteredHospital] = useState(storedHospital);
+  const [registeredHospital, setRegisteredHospital] =
+    useState(storedHospital);
 
   const [formData, setFormData] = useState({
-    hospitalId: storedHospital?.hospitalId ?? "",
-    hospitalName: storedHospital?.hospitalName ?? "",
-    location: storedHospital?.location ?? "",
-    latitude: storedHospital?.latitude ?? "",
-    longitude: storedHospital?.longitude ?? "",
-    bloodCapacity: storedHospital?.bloodCapacity ?? {
-      A_Positive: 0,
-      B_Positive: 0,
-      O_Positive: 0,
-      AB_Positive: 0,
-      A_Negative: 0,
-      B_Negative: 0,
-      O_Negative: 0,
-      AB_Negative: 0,
-    },
-    doctors:
-      storedHospital?.doctors ?? [{ doctorName: "", specialty: "" }],
-    specializations: storedHospital?.specializations?.join(", ") ?? "",
+    hospitalId: "",
+    hospitalName: "",
+    hospitalPhoneno: "",
+    location: "",
+    latitude: "",
+    longitude: "",
+    bloodCapacity: EMPTY_BLOOD,
+    doctors: [{ doctorName: "", specialty: "" }],
+    specializations: "",
   });
 
-  const [originalData, setOriginalData] = useState(deepCopy(formData));
+  const [originalData, setOriginalData] = useState(null);
 
   // 📍 geolocation
   useEffect(() => {
-    navigator.geolocation.getCurrentPosition((pos) =>
-      setUserLocation({
-        latitude: pos.coords.latitude,
-        longitude: pos.coords.longitude,
-      })
+    navigator.geolocation.getCurrentPosition(
+      (pos) =>
+        setUserLocation({
+          latitude: pos.coords.latitude,
+          longitude: pos.coords.longitude,
+        }),
+      () => {}
     );
   }, []);
 
+  // 🔁 sync form if hospital exists
+  useEffect(() => {
+    if (!registeredHospital) return;
+
+    const synced = {
+      hospitalId: registeredHospital.hospitalId ?? "",
+      hospitalName: registeredHospital.hospitalName ?? "",
+      hospitalPhoneno: registeredHospital.hospitalPhoneno
+        ? String(registeredHospital.hospitalPhoneno)
+        : "",
+      location: registeredHospital.location ?? "",
+      latitude: registeredHospital.latitude ?? "",
+      longitude: registeredHospital.longitude ?? "",
+      bloodCapacity: registeredHospital.bloodCapacity ?? EMPTY_BLOOD,
+      doctors:
+        registeredHospital.doctors ?? [{ doctorName: "", specialty: "" }],
+      specializations:
+        registeredHospital.specializations?.join(", ") ?? "",
+    };
+
+    setFormData(synced);
+    setOriginalData(deepCopy(synced));
+  }, [registeredHospital]);
+
   // 🔍 detect changes
   const hasChanges =
-    originalData && JSON.stringify(formData) !== JSON.stringify(originalData);
+    originalData &&
+    JSON.stringify(formData) !== JSON.stringify(originalData);
 
-  // 🔧 input handlers
+  // 🔧 generic change handler
   const handleChange = (e) => {
     const { name, value } = e.target;
+
     if (name.startsWith("bloodCapacity.")) {
       const key = name.split(".")[1];
       setFormData((prev) => ({
         ...prev,
-        bloodCapacity: { ...prev.bloodCapacity, [key]: value },
+        bloodCapacity: {
+          ...prev.bloodCapacity,
+          [key]: value,
+        },
       }));
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
     }
   };
 
+  // 👨‍⚕️ doctors
   const handleDoctorChange = (index, field, value) => {
-    const updatedDoctors = [...formData.doctors];
-    updatedDoctors[index][field] = value;
-    setFormData((prev) => ({ ...prev, doctors: updatedDoctors }));
+    const updated = [...formData.doctors];
+    updated[index][field] = value;
+    setFormData((prev) => ({ ...prev, doctors: updated }));
   };
 
   const addDoctor = () =>
@@ -86,8 +121,13 @@ const HospitalDashboard = () => {
     setErrmsg("");
 
     try {
+      // ✅ prevent sending null phone
       const payload = {
         ...formData,
+        hospitalPhoneno:
+          formData.hospitalPhoneno !== ""
+            ? formData.hospitalPhoneno
+            : registeredHospital?.hospitalPhoneno || null,
         latitude: formData.latitude || userLocation?.latitude,
         longitude: formData.longitude || userLocation?.longitude,
         bloodCapacity: Object.fromEntries(
@@ -95,8 +135,11 @@ const HospitalDashboard = () => {
         ),
         specializations: formData.specializations
           .split(",")
-          .map((s) => s.trim()),
+          .map((s) => s.trim())
+          .filter(Boolean),
       };
+
+      let res;
 
       if (registeredHospital) {
         if (!hasChanges) {
@@ -105,60 +148,32 @@ const HospitalDashboard = () => {
           return;
         }
 
-        await axios.patch(
+        res = await axios.patch(
           `http://localhost:3001/api/hospitals/${formData.hospitalId}`,
           payload,
           { withCredentials: true }
         );
-
         alert("Hospital updated successfully");
       } else {
-        await axios.post("http://localhost:3001/api/hospitals", payload, {
-          withCredentials: true,
-        });
-
+        res = await axios.post(
+          "http://localhost:3001/api/hospitals",
+          payload,
+          { withCredentials: true }
+        );
         alert("Hospital added successfully");
       }
 
-      // ✅ update localStorage & state
       localStorage.setItem(
         "registerHospitalDetails",
-        JSON.stringify(payload)
+        JSON.stringify(res.data)
       );
-      setRegisteredHospital(payload);
-      setOriginalData(deepCopy(payload));
+      setRegisteredHospital(res.data);
     } catch (err) {
       console.error(err);
       setErrmsg("Operation failed");
     } finally {
       setIsLoading(false);
     }
-  };
-
-  // 🧹 clear localStorage
-  const clearStorage = () => {
-    localStorage.removeItem("registerHospitalDetails");
-    setRegisteredHospital(null);
-    setFormData({
-      hospitalId: "",
-      hospitalName: "",
-      location: "",
-      latitude: "",
-      longitude: "",
-      bloodCapacity: {
-        A_Positive: 0,
-        B_Positive: 0,
-        O_Positive: 0,
-        AB_Positive: 0,
-        A_Negative: 0,
-        B_Negative: 0,
-        O_Negative: 0,
-        AB_Negative: 0,
-      },
-      doctors: [{ doctorName: "", specialty: "" }],
-      specializations: "",
-    });
-    setOriginalData(null);
   };
 
   return (
@@ -172,7 +187,7 @@ const HospitalDashboard = () => {
           placeholder="Hospital ID"
           value={formData.hospitalId}
           onChange={handleChange}
-          disabled={!!registeredHospital} // keep ID locked for existing hospitals
+          disabled={!!registeredHospital}
         />
 
         <input
@@ -180,6 +195,16 @@ const HospitalDashboard = () => {
           name="hospitalName"
           placeholder="Hospital Name"
           value={formData.hospitalName}
+          onChange={handleChange}
+        />
+
+        {/* 📞 PHONE (Editable, won't become null) */}
+        <input
+          type="text"
+          className="form-control mb-2"
+          name="hospitalPhoneno"
+          placeholder="Hospital Phone Number"
+          value={formData.hospitalPhoneno}
           onChange={handleChange}
         />
 
@@ -254,16 +279,6 @@ const HospitalDashboard = () => {
         >
           {registeredHospital ? "Update" : "Submit"}
         </button>
-
-        {/* {registeredHospital && (
-          <button
-            type="button"
-            className="btn btn-warning w-100 mt-2"
-            onClick={clearStorage}
-          >
-            Clear LocalStorage
-          </button>
-        )} */}
       </form>
 
       {isLoading && <Loading />}

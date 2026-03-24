@@ -6,6 +6,7 @@ import mongoose from "mongoose";
 import "./config/passport.js";
 import mainRoute from './routes/mainRoute.js'
 import { Hospital } from "./models/hospitalSchema.js";
+import { Ambulance } from "./models/ambulanceModelSchema.js";
 const app = express();
 app.set("trust proxy", 1);
 app.use(cors({
@@ -52,7 +53,11 @@ s%3ATryZqCHM0xCR8FcR3WGnAeB4M1FPKPLV.j3mO5rIwXcuWsf9sjXHOs2n7SINsbgyMb%2BQ4zFDp8
 app.patch("/api/hospitals/:hospitalId", async (req, res) => {
   try {
     const { hospitalId } = req.params;
-    const updates = req.body; // partial updates allowed
+    const updates = req.body;
+    console.log("udated data are below");
+    
+    console.log(updates);
+     // partial updates allowed
     const updatedHospital = await Hospital.findOneAndUpdate(
       { hospitalId },
       { $set: updates },
@@ -78,14 +83,34 @@ app.post("/auth/me", (req, res)=>{
 app.get("/nexahealth/hospitals", async(req, res)=>{
   try {
     const hospitals = await Hospital.find();
-    console.log(hospitals);
-     // gets ALL documents
     res.status(200).json(hospitals);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 })
-
+app.post("/ambulance", async(req, res)=>{
+  console.log("ambulance");
+  
+  const {userLoc} = req.body
+  
+  let nearestHospital
+  try{
+     nearestHospital =await Ambulance.findOne({
+      location: {
+        $near: {
+          $geometry: {
+            type: "Point",
+            coordinates: [userLoc.lon, userLoc.lat]
+          }
+        }
+      }
+    });
+    res.json({phoneNumber : nearestHospital.phoneNumber})   
+  }catch(err){
+    console.log(err);
+    
+  }
+})
 app.use(mainRoute)
 
 const PORT = 3001;

@@ -23,7 +23,7 @@ passport.deserializeUser(async (id, done) => {
       return done(null, { ...govtUser, role: "govt" });
     }
 
-    // user not found in both collections
+
     done(null, false);
   } catch (err) {
     done(err, false);

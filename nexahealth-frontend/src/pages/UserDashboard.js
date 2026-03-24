@@ -1,7 +1,9 @@
 import React, { useEffect, useMemo, useState } from "react";
 import useHospitals from "../hooks/useHospitals";
 
-/* Distance calculation (Haversine) */
+/* =======================
+   Distance calculation (Haversine)
+======================= */
 const getDistanceKm = (lat1, lon1, lat2, lon2) => {
   const R = 6371;
   const toRad = v => (v * Math.PI) / 180;
@@ -18,6 +20,31 @@ const getDistanceKm = (lat1, lon1, lat2, lon2) => {
   return R * 2 * Math.asin(Math.sqrt(a));
 };
 
+/* =======================
+   Google Map iframe
+======================= */
+const MapIframe = ({ lat, lon }) => {
+  if (!lat || !lon) return null;
+
+  const mapUrl = `https://www.google.com/maps?q=${lat},${lon}&z=15&output=embed`;
+
+  return (
+    <div className="ratio ratio-16x9 mt-3">
+      <iframe
+        title="hospital-location"
+        src={mapUrl}
+        loading="lazy"
+        referrerPolicy="no-referrer-when-downgrade"
+        style={{ border: 0 }}
+        allowFullScreen
+      />
+    </div>
+  );
+};
+
+/* =======================
+   User Dashboard
+======================= */
 const UserDashboard = () => {
   const { hospitals, loading } = useHospitals();
   const [userLoc, setUserLoc] = useState(null);
@@ -26,16 +53,22 @@ const UserDashboard = () => {
   const [search, setSearch] = useState("");
   const [specialization, setSpecialization] = useState("");
 
+  /* Get user location */
   useEffect(() => {
-    navigator.geolocation.getCurrentPosition(pos => {
-      setUserLoc({
-        lat: pos.coords.latitude,
-        lon: pos.coords.longitude,
-      });
-    });
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        setUserLoc({
+          lat: pos.coords.latitude,
+          lon: pos.coords.longitude,
+        });
+      },
+      err => {
+        console.error("Location error:", err);
+      }
+    );
   }, []);
 
-  /* Collect all specializations for dropdown */
+  /* Collect all specializations */
   const specializationOptions = useMemo(() => {
     const set = new Set();
     hospitals.forEach(h =>
@@ -44,6 +77,7 @@ const UserDashboard = () => {
     return [...set];
   }, [hospitals]);
 
+  /* Filter + Sort hospitals */
   const filteredData = useMemo(() => {
     if (!userLoc) return [];
 
@@ -63,8 +97,12 @@ const UserDashboard = () => {
       }))
       .filter(h => {
         const textMatch =
-          h.hospitalName.toLowerCase().includes(search.toLowerCase()) ||
-          h.location.toLowerCase().includes(search.toLowerCase());
+          h.hospitalName
+            ?.toLowerCase()
+            .includes(search.toLowerCase()) ||
+          h.location
+            ?.toLowerCase()
+            .includes(search.toLowerCase());
 
         const specializationMatch =
           !specialization ||
@@ -121,7 +159,17 @@ const UserDashboard = () => {
             <p>
               <strong>Hospital ID:</strong> {h.hospitalId}
             </p>
-
+            {/* PHONE NUMBER */}
+            <p>
+              <strong>Phone:</strong>{" "}
+              {h.hospitalPhoneno ? (
+                <a href={`tel:${h.hospitalPhoneno}`} className="text-decoration-none">
+                  {h.hospitalPhoneno}
+                </a>
+              ) : (
+                "N/A"
+              )}
+            </p>
             <p>
               <strong>Coordinates:</strong> {h.latitude}, {h.longitude}
             </p>
@@ -130,7 +178,7 @@ const UserDashboard = () => {
               <strong>Total Blood Units:</strong> {h.totalBlood}
             </p>
 
-            {/* BLOOD CAPACITY */}
+            {/* BLOOD AVAILABILITY */}
             <div className="mb-3">
               <strong>Blood Availability:</strong>
               <div className="row mt-2">
@@ -166,6 +214,19 @@ const UserDashboard = () => {
             <span className="badge bg-primary">
               {h.distance.toFixed(2)} km away
             </span>
+
+            {/* MAP */}
+            <MapIframe lat={h.latitude} lon={h.longitude} />
+
+            {/* OPEN IN GOOGLE MAPS */}
+            <a
+              href={`https://www.google.com/maps/search/?api=1&query=${h.latitude},${h.longitude}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn btn-outline-primary btn-sm mt-2"
+            >
+              Open in Google Maps
+            </a>
           </div>
         </div>
       ))}

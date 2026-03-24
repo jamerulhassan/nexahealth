@@ -17,6 +17,27 @@ export const HospitalValidation = {
     },
   },
 
+  hospitalPhoneno: {
+  notEmpty: {
+    errorMessage: "Hospital phone number must not be empty",
+  },
+  isString: {
+    errorMessage: "Hospital phone number must be a string",
+  },
+  isNumeric: {
+    errorMessage: "Hospital phone number must contain only numbers",
+  },
+  isLength: {
+    options: { min: 10, max: 10 },
+    errorMessage: "Hospital phone number must be exactly 10 digits",
+  },
+  custom: {
+    options: (value) => /^\d{10}$/.test(value),
+    errorMessage: "Hospital phone number must be a valid 10-digit number",
+  },
+},
+
+
   location: {
     notEmpty: {
       errorMessage: "Location must not be empty",
@@ -47,9 +68,7 @@ export const HospitalValidation = {
   },
 
   "bloodCapacity.A_Positive": {
-    notEmpty: {
-      errorMessage: "A+ blood count is required",
-    },
+    notEmpty: { errorMessage: "A+ blood count is required" },
     isInt: {
       options: { min: 0 },
       errorMessage: "A+ blood count must be a number",
