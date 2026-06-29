@@ -115,7 +115,7 @@ app.post("/ambulance", async(req, res)=>{
 })
 app.use(mainRoute)
 
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
 });
