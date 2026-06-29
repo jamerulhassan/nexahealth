@@ -105,6 +105,8 @@ app.post("/ambulance", async(req, res)=>{
         }
       }
     });
+    console.log(nearestHospital.phoneNumber);
+    
     res.json({phoneNumber : nearestHospital.phoneNumber})   
   }catch(err){
     console.log(err);
