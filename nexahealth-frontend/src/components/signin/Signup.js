@@ -27,7 +27,7 @@ const[errMsg, setErrmsg] = useState('');
         try{
             setErrmsg('');
             setIsLoading(true);
-            const response = await axios.post("http://localhost:3001/auth/signup/hospital",{hospitalId : formData.id, password: formData.password, role : formData.role},{ withCredentials: true })   
+            const response = await axios.post("https://nexahealth-backend-yxs1.onrender.com/auth/signup/hospital",{hospitalId : formData.id, password: formData.password, role : formData.role},{ withCredentials: true })   
             console.log("hi");
             if(response.data.status === "success"){
                localStorage.setItem(
@@ -53,7 +53,7 @@ const[errMsg, setErrmsg] = useState('');
         try{
             setErrmsg('');
             setIsLoading(true);
-            const response = await axios.post("http://localhost:3001/auth/signup/govt",{govtId : formData.id, password: formData.password, Role : formData.role},{ withCredentials: true })   
+            const response = await axios.post("https://nexahealth-backend-yxs1.onrender.com/auth/signup/govt",{govtId : formData.id, password: formData.password, Role : formData.role},{ withCredentials: true })   
             console.log(response.data);
             if(response.data.status === "success"){
                 nav("/govtDashboard")

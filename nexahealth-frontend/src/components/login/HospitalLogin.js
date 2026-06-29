@@ -17,7 +17,7 @@ const HospitalLogin = ({handleLogAndSign, setRegisteredHospital}) => {
       setIsLoading(true)
       console.log("above");
       
-      const response = await axios.post("http://localhost:3001/auth/login",{id : hospitalId,password, role : "hospital"},{withCredentials : true})
+      const response = await axios.post("https://nexahealth-backend-yxs1.onrender.com/auth/login",{id : hospitalId,password, role : "hospital"},{withCredentials : true})
       localStorage.setItem("registerHospitalDetails", JSON.stringify(response.data.hospitalInfo))
       setRegisteredHospital(response.data.hospitalInfo)
       if(response.data.status === "successfuly login"){

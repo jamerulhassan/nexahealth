@@ -21,7 +21,7 @@ function App() {
   const handleLogAndSign = async (dash) => {
     try {
       const res = await axios.post(
-        "http://localhost:3001/auth/me",
+        "https://nexahealth-backend-yxs1.onrender.com/auth/me",
         {},
         { withCredentials: true }
       );

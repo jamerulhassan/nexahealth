@@ -149,14 +149,14 @@ const HospitalDashboard = () => {
         }
 
         res = await axios.patch(
-          `http://localhost:3001/api/hospitals/${formData.hospitalId}`,
+          `https://nexahealth-backend-yxs1.onrender.com/api/hospitals/${formData.hospitalId}`,
           payload,
           { withCredentials: true }
         );
         alert("Hospital updated successfully");
       } else {
         res = await axios.post(
-          "http://localhost:3001/api/hospitals",
+          "https://nexahealth-backend-yxs1.onrender.com/api/hospitals",
           payload,
           { withCredentials: true }
         );

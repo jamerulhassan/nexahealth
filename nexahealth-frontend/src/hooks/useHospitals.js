@@ -7,7 +7,7 @@ const useHospitals = () => {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    axios.get("http://localhost:3001/nexahealth/hospitals") // change URL if needed
+    axios.get("https://nexahealth-backend-yxs1.onrender.com/nexahealth/hospitals") // change URL if needed
       .then(res => {
         setHospitals(res.data);
         setLoading(false);

@@ -12,7 +12,7 @@ const [errMsg, setErrmsg] = useState('');
     try{
           setErrmsg('')
           setIsLoading(true)
-          const response = await axios.post("http://localhost:3001/auth/signout",{},{withCredentials : true})
+          const response = await axios.post("https://nexahealth-backend-yxs1.onrender.com/auth/signout",{},{withCredentials : true})
           console.log(response);
           
           if(response.data.status === "successfuly signout"){

@@ -32,7 +32,7 @@ const Header = ({ loginStatus }) => {
       setLoading(true);
 
       const res = await axios.post(
-        "http://localhost:3001/ambulance",
+        "https://nexahealth-backend-yxs1.onrender.com/ambulance",
         { userLoc },
         { withCredentials: true }
       );

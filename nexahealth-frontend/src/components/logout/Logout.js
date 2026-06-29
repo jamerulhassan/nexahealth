@@ -12,7 +12,7 @@ const [errMsg, setErrmsg] = useState('');
     try{
           setErrmsg('')
           setIsLoading(true)
-          const response = await axios.post("http://localhost:3001/auth/logout",{},{withCredentials : true})
+          const response = await axios.post("https://nexahealth-backend-yxs1.onrender.com/auth/logout",{},{withCredentials : true})
           if(response.data.status === "successfuly logout"){
             nav("/")
             localStorage.removeItem("registerHospitalDetails");
