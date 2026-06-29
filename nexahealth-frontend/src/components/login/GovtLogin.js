@@ -37,7 +37,7 @@ const [errMsg, setErrmsg] = useState('');
   return (
     <div className="container d-flex justify-content-center align-items-center min-vh-100">
       <div className="card shadow-sm p-4" style={{ maxWidth: "400px", width: "100%" }}>
-        <h4 className="text-center mb-3">🏛️ Government Login</h4>
+        <h4 className="text-center mb-3">🏛️ Government Login 🏛️</h4>
 
         <form onSubmit={handleSubmit}>
           <div className="mb-3">
