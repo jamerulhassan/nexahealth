@@ -7,6 +7,8 @@ import "./config/passport.js";
 import mainRoute from './routes/mainRoute.js'
 import { Hospital } from "./models/hospitalSchema.js";
 import { Ambulance } from "./models/ambulanceModelSchema.js";
+import dotenv from "dotenv";
+dotenv.config();
 const app = express();
 app.set("trust proxy", 1);
 app.use(cors({
@@ -17,7 +19,7 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: true }));
 
 
-mongoose.connect('mongodb://localhost:27017/nexahealth')
+mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log("MongoDB connected"))
   .catch(err => console.error("MongoDB connection error:", err));
 
