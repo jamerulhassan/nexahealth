@@ -26,19 +26,21 @@ mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log("MongoDB connected"))
   .catch(err => console.error("MongoDB connection error:", err));
 
-
+app.set("trust proxy", 1);
 app.use(session({
-  name: "connect.sid",
-  secret: 'asdfghjkl;',
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    maxAge: 1000 * 60 * 60,
-    httpOnly: true,
-    secure: false,
-    sameSite: "lax"       
-  }
+    name: "connect.sid",
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    proxy: true,
+    cookie: {
+        httpOnly: true,
+        secure: true,
+        sameSite: "none",
+        maxAge: 1000 * 60 * 60
+    }
 }));
+
 
 
 app.use(passport.initialize());
