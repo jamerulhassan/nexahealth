@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import axios from "axios";
 
 const Header = ({ loginStatus }) => {
+  console.log(loginStatus);
+  
   const [userLoc, setUserLoc] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -22,6 +24,8 @@ const Header = ({ loginStatus }) => {
   }, []);
 
   const callAmbulance = async () => {
+    console.log(userLoc);
+    
     if (!userLoc) {
       alert("Location not ready");
       return;
