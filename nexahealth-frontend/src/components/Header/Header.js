@@ -42,7 +42,8 @@ const Header = ({ loginStatus }) => {
       );
 
       const phone = res.data.phoneNumber;
-
+      console.log(phone);
+      
       if (!phone) {
         alert("No ambulance phone number found");
         return;
