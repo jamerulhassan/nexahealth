@@ -116,7 +116,10 @@ app.post("/ambulance", async(req, res)=>{
     
     res.json({phoneNumber : nearestHospital.phoneNumber})   
   }catch(err){
-    console.log(err);
+    console.error(err);
+  res.status(500).json({
+    message: "Unable to find ambulance"
+  });
     
   }
 })

@@ -24,7 +24,9 @@ const ambulanceModelSchema = new mongoose.Schema({
     }
   }
 });
-
+ambulanceModelSchema.index({
+  location: "2dsphere"
+});
 export const Ambulance = mongoose.model(
   "Ambulance",
   ambulanceModelSchema
