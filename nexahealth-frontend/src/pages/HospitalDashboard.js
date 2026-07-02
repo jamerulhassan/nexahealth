@@ -35,7 +35,7 @@ const HospitalDashboard = () => {
     location: "",
     latitude: "",
     longitude: "",
-    bloodCapacity: EMPTY_BLOOD,
+bloodCapacity: { ...EMPTY_BLOOD },
     doctors: [{ doctorName: "", specialty: "" }],
     specializations: "",
   });
@@ -56,27 +56,32 @@ const HospitalDashboard = () => {
 
   // 🔁 sync form if hospital exists
   useEffect(() => {
-    if (!registeredHospital) return;
+  if (!registeredHospital) return;
 
-    const synced = {
-      hospitalId: registeredHospital.hospitalId ?? "",
-      hospitalName: registeredHospital.hospitalName ?? "",
-      hospitalPhoneno: registeredHospital.hospitalPhoneno
-        ? String(registeredHospital.hospitalPhoneno)
-        : "",
-      location: registeredHospital.location ?? "",
-      latitude: registeredHospital.latitude ?? "",
-      longitude: registeredHospital.longitude ?? "",
-      bloodCapacity: registeredHospital.bloodCapacity ?? EMPTY_BLOOD,
-      doctors:
-        registeredHospital.doctors ?? [{ doctorName: "", specialty: "" }],
-      specializations:
-        registeredHospital.specializations?.join(", ") ?? "",
-    };
+  const hospital = registeredHospital.data || registeredHospital;
 
-    setFormData(synced);
-    setOriginalData(deepCopy(synced));
-  }, [registeredHospital]);
+  const synced = {
+    hospitalId: hospital.hospitalId ?? "",
+    hospitalName: hospital.hospitalName ?? "",
+    hospitalPhoneno: hospital.hospitalPhoneno
+      ? String(hospital.hospitalPhoneno)
+      : "",
+    location: hospital.location ?? "",
+    latitude: hospital.latitude ?? "",
+    longitude: hospital.longitude ?? "",
+    bloodCapacity: hospital.bloodCapacity
+      ? { ...hospital.bloodCapacity }
+      : { ...EMPTY_BLOOD },
+    doctors:
+      hospital.doctors && hospital.doctors.length
+        ? hospital.doctors
+        : [{ doctorName: "", specialty: "" }],
+    specializations: hospital.specializations?.join(", ") ?? "",
+  };
+
+  setFormData(synced);
+  setOriginalData(deepCopy(synced));
+}, [registeredHospital]);
 
   // 🔍 detect changes
   const hasChanges =
@@ -127,7 +132,7 @@ const HospitalDashboard = () => {
         hospitalPhoneno:
           formData.hospitalPhoneno !== ""
             ? formData.hospitalPhoneno
-            : registeredHospital?.hospitalPhoneno || null,
+            : registeredHospital?.hospitalPhoneno || "",
         latitude: formData.latitude || userLocation?.latitude,
         longitude: formData.longitude || userLocation?.longitude,
         bloodCapacity: Object.fromEntries(
@@ -163,11 +168,14 @@ const HospitalDashboard = () => {
         alert("Hospital added successfully");
       }
 
-      localStorage.setItem(
-        "registerHospitalDetails",
-        JSON.stringify(res.data)
-      );
-      setRegisteredHospital(res.data);
+const updatedHospital = res.data.data || res.data;
+
+localStorage.setItem(
+  "registerHospitalDetails",
+  JSON.stringify(updatedHospital)
+);
+
+setRegisteredHospital(updatedHospital);
     } catch (err) {
       console.error(err);
       setErrmsg("Operation failed");
